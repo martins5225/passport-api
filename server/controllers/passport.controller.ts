@@ -60,9 +60,9 @@ export const processPassport = async (
 		};
 		const extractedText = fullTextAnnotation?.text ?? '';
 		const dateOfBirthPattern =
-			/Date of Birth[^\d]+(\d{2}[^\d]+\d{2}[^\d]+\d{4})/i;
+			/Date of Birth[^\d]+(\d{2}[^\d]+\d{2}[^\d]+\d{2})/i;
 		const expiryDatePattern =
-			/Date of Expiry[^\d]+(\d{2}[^\d]+\d{2}[^\d]+\d{4})/i;
+			/Date of Expiry[^\d]+(\d{2}[^\d]+\d{2}[^\d]+\d{2})/i;
 
 		const dateOfBirthMatch = dateOfBirthPattern?.exec(extractedText);
 		const expiryDateMatch = expiryDatePattern?.exec(extractedText);
