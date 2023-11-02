@@ -73,3 +73,5 @@ app.use((err: GlobalError, req: Request, res: Response, next: NextFunction) => {
 app.listen(port, () => {
 	console.log(`Server is Fire at http://localhost:${port}`);
 });
+
+module.exports = app;
