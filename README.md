@@ -16,7 +16,7 @@ To start the Passport Vision API, follow these steps:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/passport-vision-api.git
+git clone https://github.com/martins5225/passport-api.git
 cd passport-vision-api
 ```
 
@@ -61,13 +61,14 @@ Example response:
 ```json
 {
  "dateOfBirth": "DD-MM-YY",
- "expiryDate": "DD-MM-YY""
+ "expiryDate": "DD-MM-YY"
 }
 ```
 
 ## Testing
 
 You can test the API locally by using a tool like `curl` or Postman to send POST requests to the `POST /passport/process` endpoint. Make sure to include the `name` field and a passport image file in the request.
+You can also test the API live with the url `https://api-passport-service.onrender.com/passport/process`
 
 ## Deployment
 
