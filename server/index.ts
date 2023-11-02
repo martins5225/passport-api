@@ -29,13 +29,7 @@ const connectToDb = () => {
 
 connectToDb();
 
-/**
- * TODO(developer):
- *  1. Uncomment and replace these variables before running the sample.
- *  3. Make sure you have the necessary permission to list storage buckets "storage.buckets.list"
- *    (https://cloud.google.com/storage/docs/access-control/iam-permissions#bucket_permissions)
- */
-const projectId = 'passport-vision-403903';
+const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID;
 
 const { Storage } = require('@google-cloud/storage');
 
