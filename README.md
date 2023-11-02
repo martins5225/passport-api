@@ -6,7 +6,7 @@ Passport Vision API is a service that extracts information from passport images 
 
 Before you can use this API, ensure you have the following dependencies and components installed:
 
-- Node.js (>= 14)
+- Node.js (>= 16.20.1)
 - NPM (Node Package Manager)
 
 ## Getting Started
