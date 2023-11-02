@@ -8,6 +8,7 @@
 		"start": "nodemon --exec babel-node server/index.js",
 		"dev": "ts-node-dev --respawn --transpile-only server/index.ts"
 	},
+	"type": "module",
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
