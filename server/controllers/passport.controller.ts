@@ -1,7 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response, response } from 'express';
 
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { PassportModel } from '../models/passportModel';
+import axios from 'axios';
 
 const client = new ImageAnnotatorClient();
 
@@ -11,15 +12,39 @@ export const processPassport = async (
 	next: NextFunction
 ) => {
 	try {
-		if (!req.file || !req.body.name) {
+		const { image, name } = req.body;
+
+		if (!image || !name) {
 			return res
 				.status(400)
 				.json({ error: 'Passport image or name not provided' });
 		}
 
-		const imageBuffer = req.file.buffer;
+		let base64String: string;
+		console.log(image);
+		if (image.startsWith('http') || image.startsWith('https')) {
+			// Fetch the image from the URL and convert it to base64
+			const response = await axios.get(image, {
+				responseType: 'arraybuffer',
+			});
 
-		const [result] = await client.textDetection(imageBuffer);
+			if (response.status !== 200) {
+				return res
+					.status(400)
+					.json({ error: 'Failed to fetch the image from the URL' });
+			}
+
+			const imageBuffer = Buffer.from(response.data);
+			base64String = imageBuffer.toString('base64');
+		} else {
+			base64String = image;
+		}
+
+		const [result] = await client.textDetection({
+			image: { content: base64String },
+		});
+
+		console.log(result);
 		const fullTextAnnotation = result.fullTextAnnotation;
 		const monthAbbreviations: { [key: string]: string } = {
 			JAN: '01',
