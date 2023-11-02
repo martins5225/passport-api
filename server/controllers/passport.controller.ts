@@ -21,7 +21,6 @@ export const processPassport = async (
 		}
 
 		let base64String: string;
-		console.log(image);
 		if (image.startsWith('http') || image.startsWith('https')) {
 			// Fetch the image from the URL and convert it to base64
 			const response = await axios.get(image, {
@@ -44,7 +43,6 @@ export const processPassport = async (
 			image: { content: base64String },
 		});
 
-		console.log(result);
 		const fullTextAnnotation = result.fullTextAnnotation;
 		const monthAbbreviations: { [key: string]: string } = {
 			JAN: '01',
@@ -61,12 +59,10 @@ export const processPassport = async (
 			DEC: '12',
 		};
 		const extractedText = fullTextAnnotation?.text ?? '';
-		console.log(extractedText);
 		const dateOfBirthPattern =
-			/Date of Birth[^\d]+(\d{2}[^\d]+[A-Z]{3}[^\d]+\d{2})/i;
-
+			/Date of Birth[^\d]+(\d{2}[^\d]+\d{2}[^\d]+\d{4})/i;
 		const expiryDatePattern =
-			/Date of Expiry[^\d]+(\d{2}[^\d]+[A-Z]{3}[^\d]+\d{2})/i;
+			/Date of Expiry[^\d]+(\d{2}[^\d]+\d{2}[^\d]+\d{4})/i;
 
 		const dateOfBirthMatch = dateOfBirthPattern?.exec(extractedText);
 		const expiryDateMatch = expiryDatePattern?.exec(extractedText);

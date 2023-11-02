@@ -2,7 +2,6 @@ import express, { Application, NextFunction, Request, Response } from 'express';
 
 import { GlobalError } from '../interface';
 import cors from 'cors';
-// import { Storage } from '@google-cloud/vision';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import passportRouter from './routes/passport.router';
