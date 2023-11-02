@@ -1,6 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
 
-import { GlobalError } from './interface';
+import { GlobalError } from '../interface';
+// import { Storage } from '@google-cloud/vision';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import passportRouter from './routes/passport.router';
@@ -28,11 +29,37 @@ const connectToDb = () => {
 
 connectToDb();
 
+/**
+ * TODO(developer):
+ *  1. Uncomment and replace these variables before running the sample.
+ *  3. Make sure you have the necessary permission to list storage buckets "storage.buckets.list"
+ *    (https://cloud.google.com/storage/docs/access-control/iam-permissions#bucket_permissions)
+ */
+const projectId = 'passport-vision-403903';
+
+const { Storage } = require('@google-cloud/storage');
+
+async function authenticateImplicitWithAdc() {
+	const storage = new Storage({
+		projectId,
+	});
+	const [buckets] = await storage.getBuckets();
+	console.log('Buckets:');
+
+	for (const bucket of buckets) {
+		console.log(`- ${bucket.name}`);
+	}
+
+	console.log('Listed all storage buckets.');
+}
+
+authenticateImplicitWithAdc();
+
 app.get('/', (req: Request, res: Response) => {
 	res.send('Welcome to Passport Server');
 });
 
-app.use('./passport', passportRouter);
+app.use('/passport', passportRouter);
 
 // Unknown route handler
 app.use('/*', (req, res) => res.status(404).send('Page not found'));

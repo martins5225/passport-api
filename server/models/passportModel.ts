@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-import { PassportData } from '../interface';
+import { PassportData } from '../../interface';
 
 const passportSchema = new Schema<PassportData>({
 	dateOfBirth: String,
