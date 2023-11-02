@@ -9,12 +9,6 @@ Before you can use this API, ensure you have the following dependencies and comp
 - Node.js (>= 14)
 - NPM (Node Package Manager)
 
-Install project dependencies by running:
-
-```bash
-npm install
-```
-
 ## Getting Started
 
 To start the Passport Vision API, follow these steps:
