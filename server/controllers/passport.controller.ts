@@ -63,12 +63,13 @@ export const processPassport = async (
 		const extractedText = fullTextAnnotation?.text ?? '';
 		console.log(extractedText);
 		const dateOfBirthPattern =
-			/Date of Birth[^\d]+(\d{2}[^\d]+[A-Z]{3}[^\d]+\d{2})/i;
+			/Date of Birth.*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+\d{2})/i;
 
 		const expiryDatePattern =
-			/Date of Expiry[^\d]+(\d{2}[^\d]+[A-Z]{3}[^\d]+\d{2})/i;
+			/Date of Expiry.*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+\d{2})/i;
 
 		const dateOfBirthMatch = dateOfBirthPattern?.exec(extractedText);
+		console.log(dateOfBirthMatch);
 		const expiryDateMatch = expiryDatePattern?.exec(extractedText);
 
 		let dateOfBirth = '';
