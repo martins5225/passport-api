@@ -77,7 +77,6 @@ export const processPassport = async (
 		if (dateOfBirthMatch) {
 			let dateOfBirthString = dateOfBirthMatch[1];
 			const monthAbbreviation = dateOfBirthString.match(/[A-Z]{3}/);
-			console.log(monthAbbreviation);
 			if (monthAbbreviation) {
 				const numericMonth = monthAbbreviations[monthAbbreviation[0]];
 				dateOfBirthString = dateOfBirthString.replace(
@@ -91,8 +90,6 @@ export const processPassport = async (
 				const yearValue = yearMatch[1];
 
 				if (yearValue.length === 2) {
-					console.log('im here working');
-
 					const twoDigitYearInt = parseInt(yearValue, 10);
 
 					let century = currentCentury;
