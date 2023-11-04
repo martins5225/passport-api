@@ -63,10 +63,10 @@ export const processPassport = async (
 		const extractedText = fullTextAnnotation?.text ?? '';
 		console.log(extractedText);
 		const dateOfBirthPattern =
-			/Date of Birth.*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+.*\d{2})/i;
+			/(?:Date of Birth|Date de Naissance).*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+.*\d{2})/i;
 
 		const expiryDatePattern =
-			/Date of Expir.*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+.*\d{2})/i;
+			/(?:Date of Expiry|Date d'Expiration).*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+.*\d{2})/i;
 
 		const dateOfBirthMatch = dateOfBirthPattern?.exec(extractedText);
 		console.log(dateOfBirthMatch);
@@ -78,6 +78,7 @@ export const processPassport = async (
 		if (dateOfBirthMatch) {
 			let dateOfBirthString = dateOfBirthMatch[1];
 			const monthAbbreviation = dateOfBirthString.match(/[A-Z]{3}/);
+			console.log(monthAbbreviation);
 			if (monthAbbreviation) {
 				const numericMonth = monthAbbreviations[monthAbbreviation[0]];
 				dateOfBirthString = dateOfBirthString.replace(
@@ -85,6 +86,28 @@ export const processPassport = async (
 					numericMonth
 				);
 			}
+			const yearPattern = /(\d{2}|\d{4})$/;
+			const yearMatch = yearPattern.exec(dateOfBirthString);
+			if (yearMatch && yearMatch.length === 2) {
+				const twoDigitYear = yearMatch[1];
+				const currentYear = new Date().getFullYear().toString().substr(-2);
+				const currentCentury = new Date().getFullYear().toString().substr(0, 2);
+				// Convert the two-digit year to an integer
+				const twoDigitYearInt = parseInt(twoDigitYear, 10);
+
+				// Determine the century based on comparison with the current year
+				let century = currentCentury;
+				if (twoDigitYearInt > parseInt(currentYear)) {
+					// If the two-digit year is greater than the current year, use the previous century
+					century = (parseInt(currentCentury) - 1).toString();
+				}
+				// Replace only the last two digits with the converted year
+				dateOfBirthString = dateOfBirthString.replace(
+					twoDigitYear,
+					century + twoDigitYear
+				);
+			}
+
 			dateOfBirth = dateOfBirthString.replace(/[^\d]+/g, '-');
 		}
 
@@ -96,6 +119,29 @@ export const processPassport = async (
 				expiryDateString = expiryDateString.replace(
 					monthAbbreviation[0],
 					numericMonth
+				);
+			}
+			const yearPattern = /(\d{2}|\d{4})$/;
+			const yearMatch = yearPattern.exec(expiryDateString);
+			if (yearMatch?.length === 2) {
+				const twoDigitYear = yearMatch[1];
+				const currentYear = new Date().getFullYear().toString().substring(-2);
+				const currentCentury = new Date()
+					.getFullYear()
+					.toString()
+					.substring(0, 2);
+				// Convert the two-digit year to an integer
+				const twoDigitYearInt = parseInt(twoDigitYear, 10);
+
+				// Determine the century based on comparison with the current year
+				let century = currentCentury;
+				if (twoDigitYearInt > parseInt(currentYear)) {
+					// If the two-digit year is greater than the current year, use the current century
+					century = parseInt(currentCentury).toString();
+				}
+				expiryDateString = expiryDateString.replace(
+					twoDigitYear,
+					century + twoDigitYear
 				);
 			}
 			expiryDate = expiryDateString.replace(/[^\d]+/g, '-');
