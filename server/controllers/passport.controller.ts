@@ -6,6 +6,23 @@ import axios from 'axios';
 
 const client = new ImageAnnotatorClient();
 
+const fetchImageAndConvertToBase64 = async (image: string): Promise<string> => {
+	if (image.startsWith('http') || image.startsWith('https')) {
+		const response = await axios.get(image, {
+			responseType: 'arraybuffer',
+		});
+
+		if (response.status !== 200) {
+			throw new Error('Failed to fetch the image from the URL');
+		}
+
+		const imageBuffer = Buffer.from(response.data);
+		return imageBuffer.toString('base64');
+	} else {
+		return image;
+	}
+};
+
 export const processPassport = async (
 	req: Request,
 	res: Response,
@@ -20,31 +37,12 @@ export const processPassport = async (
 				.json({ error: 'Passport image or name not provided' });
 		}
 
-		let base64String: string;
-		console.log(image);
-		if (image.startsWith('http') || image.startsWith('https')) {
-			// Fetch the image from the URL and convert it to base64
-			const response = await axios.get(image, {
-				responseType: 'arraybuffer',
-			});
-
-			if (response.status !== 200) {
-				return res
-					.status(400)
-					.json({ error: 'Failed to fetch the image from the URL' });
-			}
-
-			const imageBuffer = Buffer.from(response.data);
-			base64String = imageBuffer.toString('base64');
-		} else {
-			base64String = image;
-		}
+		const base64String = await fetchImageAndConvertToBase64(image);
 
 		const [result] = await client.textDetection({
 			image: { content: base64String },
 		});
 
-		console.log(result);
 		const fullTextAnnotation = result.fullTextAnnotation;
 		const monthAbbreviations: { [key: string]: string } = {
 			JAN: '01',
@@ -61,7 +59,6 @@ export const processPassport = async (
 			DEC: '12',
 		};
 		const extractedText = fullTextAnnotation?.text ?? '';
-		console.log(extractedText);
 		const dateOfBirthPattern =
 			/(?:Date of Birth|Date de Naissance).*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+.*\d{2})/i;
 
@@ -69,11 +66,13 @@ export const processPassport = async (
 			/(?:Date of Expiry|Date d'Expiration).*\n(\d{2}[^\d]+[A-Z]{3}[^\d]+.*\d{2})/i;
 
 		const dateOfBirthMatch = dateOfBirthPattern?.exec(extractedText);
-		console.log(dateOfBirthMatch);
 		const expiryDateMatch = expiryDatePattern?.exec(extractedText);
 
 		let dateOfBirth = '';
 		let expiryDate = '';
+		const currentYear = new Date().getFullYear().toString().slice(-2);
+		const currentCentury = new Date().getFullYear().toString().substring(0, 2);
+		const yearPattern = /(\d{2}|\d{4})$/;
 
 		if (dateOfBirthMatch) {
 			let dateOfBirthString = dateOfBirthMatch[1];
@@ -86,26 +85,25 @@ export const processPassport = async (
 					numericMonth
 				);
 			}
-			const yearPattern = /(\d{2}|\d{4})$/;
 			const yearMatch = yearPattern.exec(dateOfBirthString);
-			if (yearMatch && yearMatch.length === 2) {
-				const twoDigitYear = yearMatch[1];
-				const currentYear = new Date().getFullYear().toString().substr(-2);
-				const currentCentury = new Date().getFullYear().toString().substr(0, 2);
-				// Convert the two-digit year to an integer
-				const twoDigitYearInt = parseInt(twoDigitYear, 10);
 
-				// Determine the century based on comparison with the current year
-				let century = currentCentury;
-				if (twoDigitYearInt > parseInt(currentYear)) {
-					// If the two-digit year is greater than the current year, use the previous century
-					century = (parseInt(currentCentury) - 1).toString();
+			if (yearMatch) {
+				const yearValue = yearMatch[1];
+
+				if (yearValue.length === 2) {
+					console.log('im here working');
+
+					const twoDigitYearInt = parseInt(yearValue, 10);
+
+					let century = currentCentury;
+					if (twoDigitYearInt > parseInt(currentYear)) {
+						century = (parseInt(currentCentury) - 1).toString();
+					}
+					dateOfBirthString = dateOfBirthString.replace(
+						yearMatch[1],
+						century + yearValue
+					);
 				}
-				// Replace only the last two digits with the converted year
-				dateOfBirthString = dateOfBirthString.replace(
-					twoDigitYear,
-					century + twoDigitYear
-				);
 			}
 
 			dateOfBirth = dateOfBirthString.replace(/[^\d]+/g, '-');
@@ -121,28 +119,22 @@ export const processPassport = async (
 					numericMonth
 				);
 			}
-			const yearPattern = /(\d{2}|\d{4})$/;
 			const yearMatch = yearPattern.exec(expiryDateString);
-			if (yearMatch?.length === 2) {
-				const twoDigitYear = yearMatch[1];
-				const currentYear = new Date().getFullYear().toString().substring(-2);
-				const currentCentury = new Date()
-					.getFullYear()
-					.toString()
-					.substring(0, 2);
-				// Convert the two-digit year to an integer
-				const twoDigitYearInt = parseInt(twoDigitYear, 10);
+			if (yearMatch) {
+				const yearValue = yearMatch[1];
 
-				// Determine the century based on comparison with the current year
-				let century = currentCentury;
-				if (twoDigitYearInt > parseInt(currentYear)) {
-					// If the two-digit year is greater than the current year, use the current century
-					century = parseInt(currentCentury).toString();
+				if (yearValue.length === 2) {
+					const twoDigitYearInt = parseInt(yearValue, 10);
+
+					let century = currentCentury;
+					if (twoDigitYearInt > parseInt(currentYear)) {
+						century = parseInt(currentCentury).toString();
+					}
+					expiryDateString = expiryDateString.replace(
+						yearMatch[1],
+						century + yearValue
+					);
 				}
-				expiryDateString = expiryDateString.replace(
-					twoDigitYear,
-					century + twoDigitYear
-				);
 			}
 			expiryDate = expiryDateString.replace(/[^\d]+/g, '-');
 		}
